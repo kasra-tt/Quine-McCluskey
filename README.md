@@ -33,9 +33,12 @@ C
 * **تکرار:** این فرآیند ترکیب به‌صورت تکراری برای گروه‌های جدید ادامه می‌یابد تا زمانی که هیچ ترکیب جدیدی ممکن نباشد.
 * **نتیجه:** عباراتی که در هیچ مرحله‌ای ترکیب نشده‌اند، به عنوان ایمپلیکنت‌های اول شناخته می‌شوند.
 
+
+
 '''java
 // مرحله اصلی ترکیب عبارات در یک حلقه تکرار می‌شود
-do {
+
+    do {
     combined = false;
     Map<Integer, List<String>> newGroups = new TreeMap<>();
     Set<String> marked = new HashSet<>();  // عبارات ترکیب شده
@@ -77,8 +80,9 @@ do {
 
     groups = newGroups;  // به‌روزرسانی گروه‌ها برای مرحله بعد
 
-} while (combined); // تا زمانی که ترکیبی انجام شود ادامه بده
+    } while (combined); // تا زمانی که ترکیبی انجام شود ادامه بده
 '''
+
 
 ### ۲. انتخاب ایمپلیکنت‌های اول ضروری (Essential Prime Implicants)
 پس از یافتن تمام ایمپلیکنت‌های اول، باید زیرمجموعه‌ای از آن‌ها را انتخاب کنیم که تمام مینترم‌های اصلی را پوشش دهد. اولین و مهم‌ترین قدم، یافتن **ایمپلیکنت‌های اول ضروری (EPI)** است. یک EPI، ایمپلیکنتی است که حداقل یک مینترم را پوشش می‌دهد که توسط هیچ ایمپلیکنت دیگری پوشش داده نمی‌شود.
@@ -88,25 +92,32 @@ do {
 * **بررسی:** جدول بررسی می‌شود تا مینترم‌هایی که تنها توسط یک ایمپلیکنت اول پوشش داده شده‌اند، پیدا شوند.
 * **انتخاب:** آن ایمپلیکنت اولی که به تنهایی یک مینترم را پوشش می‌دهد، به عنوان "ضروری" علامت‌گذاری شده و به راه‌حل نهایی اضافه می‌شود.
 
+
+
 '''java
 // ساخت جدول پوشش معکوس (مینترم → PIهای پوشش دهنده)
-Map<Integer, Set<String>> coverageMap = new HashMap<>();
-for (int m : minterms) {
+
+    Map<Integer, Set<String>> coverageMap = new HashMap<>();
+    for (int m : minterms) {
     coverageMap.put(m, new HashSet<>());
     for (String imp : implicantMap.keySet()) {
         if (implicantMap.get(imp).contains(m)) {
             coverageMap.get(m).add(imp);
         }
     }
-}
+    }
 
-// یافتن EPI
-Set<String> essential = new HashSet<>();
-Set<Integer> covered = new HashSet<>();  // مینترم‌های پوشش داده شده
 
-for (int m : coverageMap.keySet()) {
+    // یافتن EPI
+
+    Set<String> essential = new HashSet<>();
+    Set<Integer> covered = new HashSet<>();  // مینترم‌های پوشش داده شده
+
+    for (int m : coverageMap.keySet()) {
     Set<String> covers = coverageMap.get(m);
+    
     // اگر فقط یک PI این مینترم را بپوشاند
+    
     if (covers.size() == 1) {
         String only = covers.iterator().next();
         if (!essential.contains(only)) {
