@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quine-McCluskey Simplifier</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fira+Code:wght@500&display=swap');
+
+        :root {
+            --bg-gradient-start: #1D2B64;
+            --bg-gradient-end: #0F0C29;
+            --card-bg-color: rgba(255, 255, 255, 0.08);
+            --card-border-color: rgba(255, 255, 255, 0.2);
+            --primary-glow-color: #A855F7;
+            --accent-color: #2DD4BF;
+            --text-color: #E2E8F0;
+            --heading-color: #FFFFFF;
+            --subtle-text-color: #94A3B8;
+            --error-color: #F87171;
+            --success-color: #34D399;
+            --font-primary: 'Poppins', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--bg-gradient-start);
+            background-image: linear-gradient(160deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            background: var(--card-bg-color);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 2.5rem 3rem;
+            border-radius: 24px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 850px;
+            text-align: center;
+            border: 1px solid var(--card-border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        h1 {
+            color: var(--heading-color);
+            margin-bottom: 0.75rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(255,255,255,0.1);
+        }
+
+        .description {
+            color: var(--subtle-text-color);
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .form-grid {
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        
+        .input-group {
+             margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-color);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--card-border-color);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            font-family: var(--font-primary);
+            background-color: rgba(0,0,0,0.2);
+            color: var(--text-color);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .input-group input::placeholder {
+            color: var(--subtle-text-color);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary-glow-color);
+            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.3);
+        }
+        
+        .simplify-button {
+            background: linear-gradient(45deg, var(--primary-glow-color), #7C3AED);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .simplify-button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(168, 85, 247, 0.4);
+        }
+        
+        .steps-container {
+            margin-top: 3rem;
+            text-align: left;
+            border-top: 1px solid var(--card-border-color);
+            padding-top: 2.5rem;
+        }
+        
+        #final-result {
+            margin-top: 2.5rem;
+            background: rgba(0,0,0,0.2);
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid var(--card-border-color);
+        }
+        
+        #final-result h2, .steps-container h2 {
+            font-size: 1.75rem;
+            color: var(--heading-color);
+            margin: 0 0 1.5rem 0;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-glow-color);
+            display: inline-block;
+        }
+        
+        #final-result-expression {
+            font-family: var(--font-mono);
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--accent-color);
+            text-shadow: 0 0 15px rgba(45, 212, 191, 0.3);
+            word-wrap: break-word;
+        }
+        
+        .step {
+            margin-bottom: 2.5rem;
+        }
+        
+        .step h3 {
+            font-size: 1.3rem;
+            color: var(--heading-color);
+            margin-bottom: 1.25rem;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.95rem;
+            background-color: rgba(0,0,0,0.1);
+            border: 1px solid var(--card-border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border-color);
+        }
+
+        th.header-center, td.pi-chart-x {
+            text-align: center;
+        }
+        
+        thead {
+            background-color: rgba(0,0,0,0.2);
+            color: var(--heading-color);
+            font-weight: 600;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(255,255,255,0.05);
+        }
+        
+        .mono {
+            font-family: var(--font-mono);
+            color: var(--accent-color);
+        }
+        
+        .pi-chart-x {
+            color: var(--success-color);
+            font-weight: 700;
+        }
+        
+        .essential-pi {
+            background-color: rgba(45, 212, 191, 0.1);
+            font-weight: 600;
+        }
+        
+        .essential-pi .mono {
+             color: #A7F3D0;
+        }
+        
+        .error-message {
+            color: #FECACA;
+            margin-top: 1.5rem;
+            font-weight: 500;
+            background-color: rgba(248, 113, 113, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Quine-McCluskey Simplifier</h1>
+        <p class="description">
+            Enter minterms to simplify a boolean function. This tool visualizes each step of the algorithm, from grouping terms to finding the final essential prime implicants.
+        </p>
+
+        <div class="form-grid">
+            <div class="input-group">
+                <label for="vars">Number of Variables (Optional)</label>
+                <input type="number" id="vars" placeholder="Auto-detects if blank">
+            </div>
+            <div class="input-group">
+                <label for="minterms">Minterms (space-separated)</label>
+                <input type="text" id="minterms" placeholder="e.g., 0 1 2 5 8 9 10" value="4 8 10 11 12 15">
+            </div>
+             <button id="simplifyBtn" class="simplify-button">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.3 0 .5.2.5.5v3.5h3.5a.5.5 0 0 1 0 1h-3.5V12a.5.5 0 0 1-1 0V8H8a.5.5 0 0 1 0-1h3.5V3.5A.5.5 0 0 1 12 3zM4.2 7.8a.5.5 0 0 1 .4.4l1.2 2.5a.5.5 0 0 1-.7.7L2.6 9a.5.5 0 0 1 .3-.8zm15.6 0a.5.5 0 0 1 .3.8L17.3 11a.5.5 0 0 1-.7-.7l2.5-1.2a.5.5 0 0 1 .4-.3zM12 18c-.3 0-.5-.2-.5-.5v-3.5H8a.5.5 0 0 1 0-1h3.5V9.5a.5.5 0 0 1 1 0V13h3.5a.5.5 0 0 1 0 1H12.5v3.5a.5.5 0 0 1-.5.5zm-5-3a.5.5 0 0 1 .4.4l1.2 2.5a.5.5 0 0 1-.7.7L5.3 16a.5.5 0 0 1 .3-.8zm10 0a.5.5 0 0 1 .3.8l-2.5 1.2a.5.5 0 0 1-.7-.7l2.5-1.2a.5.5 0 0 1 .4-.3z"/></svg>
+                 Simplify and Visualize
+             </button>
+        </div>
+       
+        <p id="error-message" class="error-message" style="display: none;"></p>
+        
+        <div id="final-result" style="display:none;">
+            <h2>Final Simplified Function</h2>
+            <p id="final-result-expression">F = ...</p>
+        </div>
+        
+        <div id="steps-container" class="steps-container">
+            <!-- Dynamic content will be injected here -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('simplifyBtn').addEventListener('click', () => {
+            // Clear previous results
+            document.getElementById('steps-container').innerHTML = '';
+            document.getElementById('final-result').style.display = 'none';
+            const errorElement = document.getElementById('error-message');
+            errorElement.style.display = 'none';
+
+            try {
+                // --- Get User Inputs ---
+                let varsInput = document.getElementById('vars').value;
+                const mintermsInput = document.getElementById('minterms').value.trim();
+
+                if (!mintermsInput) {
+                    throw new Error("Please enter at least one minterm.");
+                }
+
+                const minterms = new Set(mintermsInput.split(/\s+/).map(p => {
+                    const num = parseInt(p);
+                    if (isNaN(num)) throw new Error(`Invalid minterm: '${p}'`);
+                    return num;
+                }));
+
+                // --- Determine Number of Variables ---
+                let vars = varsInput ? parseInt(varsInput) : -1;
+                if (vars === -1) {
+                    const maxMinterm = minterms.size > 0 ? Math.max(...minterms) : 0;
+                    vars = Math.ceil(Math.log2(maxMinterm + 1));
+                    if (vars === -Infinity || vars === 0) vars = 1;
+                }
+                document.getElementById('vars').value = vars;
+
+                // --- Core Quine-McCluskey Logic (Ported from QMFull.java) ---
+                const toBinary = (num, bits) => num.toString(2).padStart(bits, '0');
+                const countOnes = bin => (bin.match(/1/g) || []).length;
+                
+                // === STEP 1: Initial Grouping ===
+                let groups = new Map();
+                for (const m of minterms) {
+                    const bin = toBinary(m, vars);
+                    const ones = countOnes(bin);
+                    if (!groups.has(ones)) groups.set(ones, []);
+                    groups.get(ones).push({ term: bin, minterms: [m], used: false });
+                }
+                
+                groups = new Map([...groups.entries()].sort((a, b) => a[0] - b[0]));
+                visualizeInitialGrouping(groups);
+
+                // === STEP 2: Combine Terms Iteratively ===
+                let primeImplicants = new Set();
+                let passNum = 1;
+
+                while (true) {
+                    let combinedInPass = false;
+                    let newGroups = new Map();
+                    const groupKeys = [...groups.keys()].sort((a, b) => a - b);
+                    for (let i = 0; i < groupKeys.length - 1; i++) {
+                        const group1 = groups.get(groupKeys[i]);
+                        const group2 = groups.get(groupKeys[i + 1]);
+                        
+                        for (const item1 of group1) {
+                            for (const item2 of group2) {
+                                let diff = 0;
+                                let diffIndex = -1;
+                                for (let k = 0; k < item1.term.length; k++) {
+                                    if (item1.term[k] !== item2.term[k]) {
+                                        diff++;
+                                        diffIndex = k;
+                                    }
+                                }
+
+                                if (diff === 1) {
+                                    const mergedTerm = item1.term.substring(0, diffIndex) + '-' + item1.term.substring(diffIndex + 1);
+                                    const ones = countOnes(mergedTerm.replace(/-/g, ''));
+                                    const newMinterms = [...item1.minterms, ...item2.minterms].sort((a, b) => a - b);
+                                    
+                                    if (!newGroups.has(ones)) newGroups.set(ones, []);
+                                    if (!newGroups.get(ones).some(ng => ng.term === mergedTerm)) {
+                                       newGroups.get(ones).push({ term: mergedTerm, minterms: newMinterms, used: false });
+                                    }
+                                    
+                                    item1.used = true;
+                                    item2.used = true;
+                                    combinedInPass = true;
+                                }
+                            }
+                        }
+                    }
+
+                    for (const group of groups.values()) {
+                        for (const item of group) {
+                            if (!item.used) {
+                                primeImplicants.add(JSON.stringify(item));
+                            }
+                        }
+                    }
+
+                    if (!combinedInPass) break;
+                    
+                    visualizeCombinationPass(passNum, newGroups);
+                    passNum++;
+                    groups = new Map([...newGroups.entries()].sort((a, b) => a[0] - b[0]));
+                }
+                
+                const finalPIs = [...primeImplicants].map(s => JSON.parse(s));
+
+                // === STEP 3: Build Prime Implicant Chart ===
+                visualizePIChart(finalPIs, minterms);
+
+                // === STEP 4: Find Essential Prime Implicants ===
+                const essentialPIs = [];
+                let coveredMinterms = new Set();
+                const mintermCoverage = new Map();
+                for(const m of minterms) mintermCoverage.set(m, []);
+
+                for(const pi of finalPIs) {
+                    for(const m of pi.minterms) {
+                        if(mintermCoverage.has(m)){
+                            mintermCoverage.get(m).push(pi);
+                        }
+                    }
+                }
+
+                for(const [minterm, coveringPIs] of mintermCoverage.entries()){
+                    if(coveringPIs.length === 1){
+                        const essential = coveringPIs[0];
+                        if(!essentialPIs.some(e => e.term === essential.term)){
+                            essentialPIs.push(essential);
+                            essential.minterms.forEach(m => coveredMinterms.add(m));
+                        }
+                    }
+                }
+                visualizeEssentialPIs(essentialPIs, minterms);
+                
+                // === STEP 5: Cover Remaining Minterms (Greedy Approach) ===
+                let solutionPIs = [...essentialPIs];
+                let remainingMinterms = new Set([...minterms].filter(m => !coveredMinterms.has(m)));
+                
+                const nonEssentialPIs = finalPIs.filter(pi => !solutionPIs.some(s => s.term === pi.term));
+
+                while(remainingMinterms.size > 0){
+                    let bestPI = null;
+                    let maxCover = 0;
+                    
+                    for(const pi of nonEssentialPIs){
+                        const coveredCount = pi.minterms.filter(m => remainingMinterms.has(m)).length;
+                        if(coveredCount > maxCover){
+                            maxCover = coveredCount;
+                            bestPI = pi;
+                        }
+                    }
+
+                    if(bestPI){
+                        solutionPIs.push(bestPI);
+                        bestPI.minterms.forEach(m => remainingMinterms.delete(m));
+                    } else {
+                        break; // Should not happen in a valid function
+                    }
+                }
+
+                // === Final Result ===
+                const toExpression = (termStr) => {
+                    let sb = '';
+                    for (let i = 0; i < termStr.length; i++) {
+                        if (termStr[i] === '-') continue;
+                        sb += String.fromCharCode('A'.charCodeAt(0) + i);
+                        if (termStr[i] === '0') sb += "'";
+                    }
+                    return sb || "1";
+                };
+
+                const resultTerms = solutionPIs.map(pi => toExpression(pi.term));
+                const finalExpression = resultTerms.join(' + ') || "0";
+                
+                const finalResultDiv = document.getElementById('final-result');
+                finalResultDiv.style.display = 'block';
+                document.getElementById('final-result-expression').textContent = `F = ${finalExpression}`;
+
+            } catch (e) {
+                errorElement.textContent = e.message;
+                errorElement.style.display = 'block';
+            }
+        });
+
+        // --- Visualization Functions ---
+        const createTable = (headers, rows, headerClasses = []) => {
+            const table = document.createElement('table');
+            const thead = table.createTHead();
+            const tbody = table.createTBody();
+            const headerRow = thead.insertRow();
+            headers.forEach((text, index) => {
+                const th = document.createElement('th');
+                th.innerHTML = text;
+                if (headerClasses[index]) {
+                    th.className = headerClasses[index];
+                }
+                headerRow.appendChild(th);
+            });
+            rows.forEach(rowData => {
+                const row = tbody.insertRow();
+                if(rowData.some(cell => cell.isEssential)) {
+                    row.className = 'essential-pi';
+                }
+                rowData.forEach(cellData => {
+                    const cell = row.insertCell();
+                    cell.innerHTML = cellData.content;
+                    if(cellData.className) cell.className = cellData.className;
+                });
+            });
+            return table;
+        }
+        
+        const renderStep = (title, content) => {
+            const container = document.getElementById('steps-container');
+            const stepDiv = document.createElement('div');
+            stepDiv.className = 'step';
+            const h3 = document.createElement('h3');
+            h3.textContent = title;
+            stepDiv.appendChild(h3);
+            stepDiv.appendChild(content);
+            container.appendChild(stepDiv);
+        };
+
+        const visualizeInitialGrouping = (groups) => {
+            const headers = ['Group', 'Minterm', 'Binary Term'];
+            const rows = [];
+            for(const [ones, items] of groups.entries()) {
+                items.forEach((item) => {
+                    rows.push([
+                        { content: `<b>${ones}</b>` },
+                        { content: item.minterms[0] },
+                        { content: item.term, className: 'mono' }
+                    ]);
+                });
+            }
+            renderStep("Step 1: Initial Minterm Grouping", createTable(headers, rows));
+        };
+        const visualizeCombinationPass = (passNum, groups) => {
+            const headers = ['Group', 'Combined Term', 'Minterms Covered'];
+            const rows = [];
+            for (const [ones, items] of groups.entries()) {
+                items.forEach((item) => {
+                    rows.push([
+                        { content: `<b>${ones}</b>` },
+                        { content: item.term, className: 'mono' },
+                        { content: `(${item.minterms.join(', ')})` }
+                    ]);
+                });
+            }
+            if (rows.length > 0) {
+                 renderStep(`Step 2, Pass ${passNum}: Combining Terms`, createTable(headers, rows));
+            }
+        };
+
+        const visualizePIChart = (pis, minterms) => {
+            const sortedMinterms = [...minterms].sort((a,b) => a - b);
+            const headers = ['Prime Implicant', ...sortedMinterms.map(String)];
+            const headerClasses = ['', ...Array(sortedMinterms.length).fill('header-center')];
+            const rows = [];
+            pis.forEach(pi => {
+                const row = [ { content: `<span class="mono">${pi.term}</span>` } ];
+                sortedMinterms.forEach(m => {
+                    row.push({
+                        content: pi.minterms.includes(m) ? 'X' : '',
+                        className: 'pi-chart-x'
+                    });
+                });
+                rows.push(row);
+            });
+            renderStep("Step 3: Prime Implicant Chart", createTable(headers, rows, headerClasses));
+        };
+
+        const visualizeEssentialPIs = (essentialPIs, minterms) => {
+            const sortedMinterms = [...minterms].sort((a,b) => a-b);
+            const headers = ['Essential PI', ...sortedMinterms.map(String)];
+            const headerClasses = ['', ...Array(sortedMinterms.length).fill('header-center')];
+            const rows = [];
+            essentialPIs.forEach(pi => {
+                 const row = [
+                    { content: `<span class="mono">${pi.term}</span>` },
+                ];
+                sortedMinterms.forEach(m => {
+                     row.push({
+                        content: pi.minterms.includes(m) ? 'X' : '',
+                        className: 'pi-chart-x'
+                    });
+                });
+                // Mark the entire row for styling
+                rows.push(row.map(cell => ({ ...cell, isEssential: true })));
+            });
+
+            if (rows.length > 0) {
+                renderStep("Step 4: Identifying Essential Prime Implicants", createTable(headers, rows, headerClasses));
+            } else {
+                 renderStep("Step 4: Identifying Essential Prime Implicants", document.createTextNode("No essential prime implicants found."));
+            }
+        }
+        
+        // Trigger on load for the default values
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('simplifyBtn').click();
+        });
+
+    </script>
+</body>
+</html>
