@@ -99,10 +99,10 @@ C
 
     Map<Integer, Set<String>> coverageMap = new HashMap<>();
     for (int m : minterms) {
-    coverageMap.put(m, new HashSet<>());
-    for (String imp : implicantMap.keySet()) {
-        if (implicantMap.get(imp).contains(m)) {
-            coverageMap.get(m).add(imp);
+        coverageMap.put(m, new HashSet<>());
+            for (String imp : implicantMap.keySet()) {
+                if (implicantMap.get(imp).contains(m)) {
+                    coverageMap.get(m).add(imp);
         }
     }
     }
@@ -120,9 +120,9 @@ C
     
     if (covers.size() == 1) {
         String only = covers.iterator().next();
-        if (!essential.contains(only)) {
-            essential.add(only);
-            covered.addAll(implicantMap.get(only));
+            if (!essential.contains(only)) {
+                essential.add(only);
+                    covered.addAll(implicantMap.get(only));
         }
     }
 }
@@ -134,61 +134,66 @@ C
 1.  **`toBinary`**
     * **کاربرد:** تبدیل یک عدد صحیح دهدهی به یک رشته باینری با تعداد بیت مشخص. در صورت نیاز، صفرهای پیشرو به آن اضافه می‌کند.
     '''java
-    static String toBinary(int num, int bits) {
-        String bin = Integer.toBinaryString(num);
-        while (bin.length() < bits) bin = "0" + bin;
-        return bin;
-    }
+
+            static String toBinary(int num, int bits) {
+                String bin = Integer.toBinaryString(num);
+                    while (bin.length() < bits) bin = "0" + bin;
+                return bin;
+            }
     '''
 
 2.  **`countOnes`**
     * **کاربرد:** شمارش تعداد بیت‌های `1` در یک رشته باینری ورودی.
     '''java
-    static int countOnes(String bin) {
-        int count = 0;
-        for (char c : bin.toCharArray()) if (c == '1') count++;
-        return count;
-    }
+
+            static int countOnes(String bin) {
+                int count = 0;
+                    for (char c : bin.toCharArray()) if (c == '1') count++;
+                return count;
+            }
     '''
 
 3.  **`diffByOne`**
     * **کاربرد:** بررسی می‌کند که آیا دو رشته باینری دقیقاً در یک بیت با هم تفاوت دارند یا خیر.
     '''java
-    static int diffByOne(String a, String b) {
-        int diff = 0;
-        for (int i = 0; i < a.length(); i++) {
-            if (a.charAt(i) != b.charAt(i)) diff++;
-        }
-        return diff;
-    }
+
+            static int diffByOne(String a, String b) {
+                int diff = 0;
+                    for (int i = 0; i < a.length(); i++) {
+                        if (a.charAt(i) != b.charAt(i)) diff++;
+            }
+                return diff;
+            }
     '''
 
 4.  **`merge`**
     * **کاربرد:** دو رشته باینری را که فقط در یک بیت تفاوت دارند، با هم ترکیب کرده و در محل بیت متفاوت، کاراکتر `'-'` قرار می‌دهد.
     '''java
-    static String merge(String a, String b) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < a.length(); i++) {
-            if (a.charAt(i) == b.charAt(i)) sb.append(a.charAt(i));
-            else sb.append('-');
-        }
-        return sb.toString();
-    }
+
+            static String merge(String a, String b) {
+                StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < a.length(); i++) {
+                        if (a.charAt(i) == b.charAt(i)) sb.append(a.charAt(i));
+                        else sb.append('-');
+            }
+                    return sb.toString();
+            }
     '''
 
 5.  **`toExpression`**
     * **کاربرد:** یک عبارت باینری (شامل `-`) را به یک عبارت جبری خوانا (مانند `A'BC`) تبدیل می‌کند.
     '''java
-    static String toExpression(String term) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < term.length(); i++) {
-            if (term.charAt(i) == '-') continue;
-            char var = (char) ('A' + i);
-            sb.append(var);
-            if (term.charAt(i) == '0') sb.append("'");
-        }
-        return sb.toString();
-    }
+
+            static String toExpression(String term) {
+                StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < term.length(); i++) {
+                        if (term.charAt(i) == '-') continue;
+                char var = (char) ('A' + i);
+                sb.append(var);
+                    if (term.charAt(i) == '0') sb.append("'");
+                }
+            return sb.toString();
+            }
     '''
 
 ---
